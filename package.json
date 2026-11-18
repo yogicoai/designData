@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "description": "요기보 디자인 요청 데스크 — 부서별 디자인 요청서 접수·현황·일정·보관 (아티팩트 → Next 이전)",
   "scripts": {
     "dev": "next dev -p 7200",

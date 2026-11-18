@@ -74,3 +74,5 @@
 - local.js 의 `process.cwd()`·`path.join` 에 `/*turbopackIgnore: true*/` — 없으면 빌드가 프로젝트 전체를 추적한다고 경고.
 - JS 문자열 `.replace(a, b)` 의 b 안 `$$` 는 `$` 하나가 됨 → 코드 치환은 `split(a).join(b)`.
 - 서랍 머리말을 통째로 sticky 로 두면 scrollIntoView 된 버튼을 가림 → 고정은 얇은 줄(`.dh-bar`)만, `.drawer{scroll-padding-top}`.
+- **Vercel 첫 배포(11-18) `/api/state` 500**: requests.js 를 부르는 API 만 불러오는 순간 죽음(DB·첫 화면은 정상). 빌드 로그 경고 "Both `outputFileTracingRoot` and `turbopack.root` are set, but they must have the same value" — `fileURLToPath(new URL('.', …))` 는 끝에 '/' 가 붙어 달랐음. → `next.config.mjs` 에서 둘 다 `path.dirname(fileURLToPath(import.meta.url))` 로 같게, `sanitize-html` 은 `serverExternalPackages` 에서 빼서 번들(2.18 이 ESM 전용 htmlparser2 를 require), `package.json engines.node = 24.x`(이 PC 와 같게). 로컬 `next start` 는 node_modules 가 다 있어서 이런 추적 문제가 안 드러남 — 배포 문제는 빌드 로그 경고부터 볼 것.
+- Vercel 로그를 `npx vercel logs` 로 보거나 `npx -p node@20` 같은 다른 Node 를 받아 시험하는 건 자동 권한 확인에서 막힘(11-18) → 사용자에게 Vercel 화면의 Logs/빌드 로그를 받아서 봄.
