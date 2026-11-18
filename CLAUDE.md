@@ -34,7 +34,7 @@
 
 ## 다음 작업
 - VMD 양식(김성경 대리님 항목) · 개발 양식 Flow 대조(위).
-- Vercel 배포: 드롭박스 API 키는 받음(11-18, 아래 저장소). 남은 것 — 환경변수(`MONGODB_URI`·`MONGODB_DB`·`ADMIN_PASSWORD`·`SESSION_SECRET`·`DROPBOX_APP_KEY`·`DROPBOX_APP_SECRET`·`DROPBOX_REFRESH_TOKEN`·`DROPBOX_ROOT`; **`DROPBOX_MODE`·`DROPBOX_LOCAL_DIR` 은 넣지 않음**) · 워드 내보내기 4.5MB 초과 처리 · 접속 제한 방식(사이트 비밀번호 / 회사 로그인) 사용자 결정. 사이트 = https://design-data-gamma.vercel.app (11-18 12시대에 /api/state 200 으로 살아남). 단 그때 `me.storage` = local → **Vercel 에 드롭박스 키 4개가 없거나 `DROPBOX_MODE=local` 이 들어가 있음** → 이미지 /api/files 500. 키 넣고 Redeploy 뒤 `me.storage` = dropbox 인지 확인.
+- Vercel 배포: 드롭박스 API 키는 받음(11-18, 아래 저장소). 남은 것 — 환경변수(`MONGODB_URI`·`MONGODB_DB`·`ADMIN_PASSWORD`·`SESSION_SECRET`·`DROPBOX_APP_KEY`·`DROPBOX_APP_SECRET`·`DROPBOX_REFRESH_TOKEN`·`DROPBOX_ROOT`; **`DROPBOX_MODE`·`DROPBOX_LOCAL_DIR` 은 넣지 않음**) · 워드 내보내기 4.5MB 초과 처리 · 접속 제한 방식(사이트 비밀번호 / 회사 로그인) 사용자 결정. 사이트 = https://design-data-gamma.vercel.app (11-18 12시대에 /api/state 200 으로 살아남). 처음엔 드롭박스 키가 없어 local → 넣은 뒤엔 REFRESH_TOKEN 칸에 폴더 경로(45자)가 들어가 invalid_grant → 64자 토큰으로 고쳐 **11-18 오후 `/api/health` 3단계 통과 · 이미지 302 · 올리기 됨**. Vercel 의 `DROPBOX_ROOT` 는 비어 있음(기본값과 같은 폴더라 괜찮음).
 
 ## 데이터
 - `requests` (_id 'r…', by = 브라우저 익명 id, team, assignee, **folder = 드롭박스 전체 경로**, results = {round, count, at} 목록 표시용 요약)
@@ -53,7 +53,8 @@
 - 드롭박스 임시 업로드 주소(`content.dropboxapi.com/apitul/1/…`)는 CORS `*` 허용 → 브라우저 직접 올리기 가능(5.7MB 도 확인). Vercel 함수는 요청·응답 4.5MB 제한이라 직접 올리기가 필수. 일반 경로 + Path-Root 헤더 그대로 팀 폴더에 들어감.
 - 임시 업로드 주소로 올린 파일은 **응답 뒤 0.3~0.5초 지나야 보임**(11-18 측정) → 이미지 `/commit`·결과물 `/results/confirm` 이 `statSettled()`(최대 8초)로 기다림. 결과물은 올리기 전에 `freeName()` 으로 '이름 (1).png' 를 정해 두고 그 경로로 확인.
 - `files/list_folder` recursive 는 첫 장에 다 안 옴(파일 3개인데 첫 장 1개) → cursor 끝까지 읽어야 함 (앱 `list()` 는 그렇게 함).
-- ⚠ 워드 내보내기는 큰 이미지가 들어가면 4.5MB 를 넘음(5.7MB 이미지 → 7.9MB) → Vercel 에선 응답이 막힘. 배포 때 처리(예: 만든 파일을 드롭박스에 올리고 임시 링크로 넘기기).
+- 워드·엑셀 내보내기가 4MB 를 넘고 드롭박스 방식이면 `stashForDownload()` 가 `<루트>/_내보내기/<날짜>/<시각_무작위>/<파일 이름>` 에 올리고 임시 링크 JSON 을 줌 → 화면은 그 주소로 이동해 받음(Vercel 응답 4.5MB 제한 회피, 11-18). 이틀 지난 날짜 폴더는 그때 지움. 드롭박스 임시 링크는 `Content-Disposition: attachment` + 한글 파일 이름 + CORS `*` (11-18 확인) → `<img>` 로는 그냥 보이고, 이동하면 원본 이름으로 받아짐.
+- 이미지 크게 보기(Lightbox)에 **다운로드(원본, `?dl=1`) · 드롭박스 링크 복사 · 닫기** (사용자 11-18). 결과물 문서 파일 줄엔 '링크 복사'. 링크 = `sharing/create_shared_link_with_settings`(있으면 `list_shared_links`), 공개 범위는 회사 드롭박스 기본값 → API `/api/files/[id]/link` · `/api/requests/[id]/results/link`(lib/server/share.js). **앱 권한 `sharing.read`·`sharing.write` 필요** — 없으면 503 '공유 링크 권한이 아직 없어요'. 권한 추가 후 다시 허용하면 토큰이 새로 나와 Vercel `DROPBOX_REFRESH_TOKEN` 도 바꿔야 함.
 - **11-17 실제 드롭박스 연결됨**: `.env.local` 의 `DROPBOX_LOCAL_DIR=C:/Users/Yogibo Design/Yogicorporation Dropbox` (imgCreate 와 같은 방식). [테스트] 요청 폴더 들어가 있음. 이 방식은 이 PC 에서 서버가 돌 때만 — **Vercel 배포(사용자: 11-18 예정)는 드롭박스 API 키 필요**.
 - 업로드: POST /api/files → (드롭박스 API 면 임시 업로드 주소로 브라우저 직접, 아니면 /content) → /commit. 제출·수정 때 `_임시업로드/` → `요청사항/` 로 옮김. 요청서 워드는 제출·수정·철회·처리 저장 때 `after()` 로 다시 씀.
 - 결과물 API: /results(목록·올리기), /round(다음 차수, 현재 차수 비면 막음), /content(서버 경유), /file(보기·받기·삭제, `safeRel` 검사). 화면은 마지막 요청 응답만 반영(겹친 응답이 최신을 덮던 문제 11-17 수정).

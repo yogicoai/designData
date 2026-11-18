@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getDb } from '@/lib/server/db';
-import { getSession, fail, handle } from '@/lib/server/auth';
+import { getSession, json, fail, handle } from '@/lib/server/auth';
 import { buildXlsx, buildDocx } from '@/lib/server/export';
+import { store, stashForDownload } from '@/lib/server/storage';
 import { fileIdsIn } from '@/lib/shared/constants';
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 /* 엑셀·워드 받기 (디자인팀) — { format, ids, cover?: {title, sub}, filename } */
 export const POST = handle(async (req) => {
@@ -36,6 +37,10 @@ export const POST = handle(async (req) => {
     return fail('invalid', '형식은 xlsx 또는 docx 만 돼요.');
   }
   const name = String(b.filename || 'export').replace(/[\\/:*?"<>|\r\n]+/g, ' ').slice(0, 150);
+  // 배포 서버(Vercel)는 응답이 4.5MB 를 넘으면 막힘 → 드롭박스면 큰 파일은 드롭박스에 잠깐 올리고 받기 링크로
+  if (buf.length > 4 * 1024 * 1024 && store().kind === 'dropbox') {
+    return json(session, { url: await stashForDownload(name, buf), size: buf.length });
+  }
   return new NextResponse(buf, {
     headers: {
       'Content-Type': type,

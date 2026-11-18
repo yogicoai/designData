@@ -3,7 +3,7 @@
    디자인팀은 여기서 올리거나(끌어다 놓기 가능) 드롭박스 폴더에 직접 넣어도 됨. 요청자는 보기·받기만. */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { H4, RefImg, copyText } from './ui';
-import { api, uploadResult } from '@/lib/client/api';
+import { api, uploadResult, dropboxLink } from '@/lib/client/api';
 import { fmtDT } from '@/lib/shared/dates';
 
 const fileUrl = (id, p, dl) => `/api/requests/${id}/results/file?p=${encodeURIComponent(p)}${dl ? '&dl=1' : ''}`;
@@ -57,6 +57,12 @@ export default function ResultsPanel({ r, s, me, toast, onZoom, onChanged }) {
       toast(`${j.name} 폴더를 만들었어요. 이제 올리는 파일은 ${j.name}에 들어가요.`);
       await load();
     } catch (e) { toast(e?.message || '만들지 못했어요.'); }
+  }
+  async function copyLink(f) {
+    try {
+      const j = await dropboxLink({ link: { url: `/api/requests/${r.id}/results/link`, body: { rel: f.p } } });
+      await copyText(j.url, toast, `‘${f.name}’ 드롭박스 링크를 복사했어요.`);
+    } catch (e) { toast(e?.message || '링크를 만들지 못했어요.'); }
   }
   async function del(f) {
     if (!window.confirm(`‘${f.name}’ 파일을 지울까요? (드롭박스 휴지통에서 되살릴 수 있어요)`)) return;
@@ -115,6 +121,7 @@ export default function ResultsPanel({ r, s, me, toast, onZoom, onChanged }) {
                   <li key={f.p}>
                     <a href={fileUrl(r.id, f.p, true)} target="_blank" rel="noopener">{f.name}</a>
                     <span className="mono">{fmtSize(f.size)}</span>
+                    <button type="button" className="lnk" onClick={() => copyLink(f)}>링크 복사</button>
                     {admin && <button type="button" className="x" aria-label={`${f.name} 지우기`} onClick={() => del(f)}>✕</button>}
                   </li>
                 ))}

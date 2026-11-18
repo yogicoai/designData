@@ -239,7 +239,7 @@ export default function DeskApp() {
       )}
       {panel === 'login' && <TeamLogin onClose={() => setPanel(null)} onDone={async () => { setPanel(null); await refresh(true); toast('디자인팀으로 로그인했어요.'); }} />}
       {alert && <AlertBox title={alert.title} msg={alert.msg} onClose={() => setAlert(null)} />}
-      <Lightbox src={zoom} onClose={() => setZoom(null)} />
+      <Lightbox src={zoom} onClose={() => setZoom(null)} toast={toast} />
       <Toast msg={toastMsg} />
     </>
   );

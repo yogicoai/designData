@@ -3,7 +3,8 @@ import { getDb } from '@/lib/server/db';
 import { getSession, fail, handle } from '@/lib/server/auth';
 import { store } from '@/lib/server/storage';
 
-/* 이미지 보기 — 드롭박스면 임시 링크로 넘기고, 로컬이면 바로 내려줌 */
+/* 이미지 보기 — 드롭박스면 임시 링크로 넘기고(드롭박스가 '받기'로 내려주지만 <img> 에선 그냥 보임), 로컬이면 바로 내려줌.
+   ?dl=1 = 내려받기 (로컬은 attachment + 저장된 파일 이름) */
 export const GET = handle(async (req, { params }) => {
   const { id } = await params;
   if (!/^[a-f0-9]{24}$/.test(id)) return fail('not_found', '이미지를 찾을 수 없어요.', 404);
@@ -18,8 +19,14 @@ export const GET = handle(async (req, { params }) => {
     return res;
   }
   const buf = await st.read(f.path);
+  const dl = req.nextUrl.searchParams.get('dl') === '1';
+  const name = f.path.split('/').pop();
   return new NextResponse(buf, {
-    headers: { 'Content-Type': f.type, 'Content-Length': String(buf.length), 'Cache-Control': 'private, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' },
+    headers: {
+      'Content-Type': f.type, 'Content-Length': String(buf.length), 'X-Content-Type-Options': 'nosniff',
+      'Cache-Control': dl ? 'private, no-store' : 'private, max-age=31536000, immutable',
+      ...(dl ? { 'Content-Disposition': `attachment; filename="image.${name.split('.').pop()}"; filename*=UTF-8''${encodeURIComponent(name)}` } : {}),
+    },
   });
 });
 

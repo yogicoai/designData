@@ -2,7 +2,7 @@
 
    준비 (https://www.dropbox.com/developers/apps , 이 PC 드롭박스와 같은 회사 계정으로)
      1) Create app → Scoped access → Full Dropbox → 이름 (예: yogibo-design-desk)
-     2) Permissions 탭: files.metadata.read · files.metadata.write · files.content.read · files.content.write 체크 → Submit
+     2) Permissions 탭: files.metadata.read · files.metadata.write · files.content.read · files.content.write · sharing.read · sharing.write 체크 → Submit
      3) Settings 탭 › OAuth 2 › Redirect URIs 에 http://localhost:7299/callback 추가 (Add)
      4) Settings 탭의 App key · App secret 을 .env.local 의 DROPBOX_APP_KEY · DROPBOX_APP_SECRET 에 넣고 저장
 
@@ -24,7 +24,8 @@ import { parseEnv } from 'node:util';
 const ENV = '.env.local';
 const PORT = 7299;
 const REDIRECT = `http://localhost:${PORT}/callback`;
-const NEED = ['files.metadata.read', 'files.metadata.write', 'files.content.read', 'files.content.write'];
+// sharing.* = 이미지·결과물 '드롭박스 링크 복사' (11-18 추가)
+const NEED = ['files.metadata.read', 'files.metadata.write', 'files.content.read', 'files.content.write', 'sharing.read', 'sharing.write'];
 const DEFAULT_ROOT = '/2026_요기코퍼레이션_온라인·마케팅·디자인/03_디자인/11_디자인요청 데스크';
 const WAIT_MIN = 60;
 const ORIGIN = 'http://localhost:7200';
