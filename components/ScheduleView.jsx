@@ -5,7 +5,7 @@ import { Chip } from './ui';
 import { TEAMS, SMAP, teamColor } from '@/lib/shared/constants';
 import { isDropped } from '@/lib/shared/model';
 
-/* 막대 색 = 요청한 팀 색 (디자인·VMD·개발). 완료는 회색 ✓, 검토중은 옅은 점선, 보류는 흐리게 */
+/* 막대 색 = 요청한 팀 색 (디자인·VMD·개발). 팀·검토중·진행중 모두 같은 모양(선명한 테두리 + 연한 면 — 11-18 피드백), 완료는 회색 ✓, 보류는 흐리게 */
 const DONE_COLOR = '#B0B8C1';
 const barColor = (x) => (x.s === 'done' ? DONE_COLOR : teamColor(x.team));
 const barCls = (x) => (x.s === 'done' ? ' done' : x.s === 'review' ? ' rv' : x.s === 'hold' ? ' hd' : '');
@@ -181,7 +181,7 @@ export default function ScheduleView({ rows, onOpen }) {
         </div>
         <div className="legend">
           {TEAMS.map((t) => <span key={t.k}><i style={{ '--c': t.color }} />{t.k}</span>)}
-          <span><i className="rv" style={{ '--c': '#8B95A1' }} />검토중</span><span><i style={{ '--c': DONE_COLOR }} />완료</span>
+          <span><i style={{ '--c': DONE_COLOR }} />완료</span>
           <span><i className="dia" />시안</span><span><i className="live" />라이브</span>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default function ScheduleView({ rows, onOpen }) {
       ) : (
         <Timeline month={month} rows={ids} onOpen={onOpen} />
       )}
-      <p className="gnote">막대는 작업 시작일(디자인팀 확정, 없으면 접수일)부터 라이브 날짜까지이고, 막대가 끝나는 날이 라이브입니다. ◆는 시안 공유일입니다. 막대 색은 요청한 팀(디자인 · VMD · 개발)이고, 검토중은 점선, 완료는 회색 ✓ 막대로 계속 보이며, 취소·철회된 요청만 빠집니다. 막대를 누르면 상세 내용이 열려요.</p>
+      <p className="gnote">막대는 작업 시작일(디자인팀 확정, 없으면 접수일)부터 라이브 날짜까지이고, 막대가 끝나는 날이 라이브입니다. ◆는 시안 공유일입니다. 막대 색은 요청한 팀(디자인 · VMD · 개발)이고, 모든 팀이 같은 모양(선명한 테두리 · 연한 면)이며, 보류는 흐리게, 완료는 회색 ✓ 막대로 계속 보이며, 취소·철회된 요청만 빠집니다. 막대를 누르면 상세 내용이 열려요.</p>
     </section>
   );
 }

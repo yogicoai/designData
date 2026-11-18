@@ -69,7 +69,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
       team: f.team, place: cfg.place ? f.place.trim() : '', dept: f.dept, name: f.name.trim(), title: f.title.trim(), type: f.type,
       channels: cfg.chips ? f.channels : [], channelEtc: cfg.chips ? f.channelEtc.trim() : '',
       goal: f.goal.trim(), target: f.target.trim(), plan: ed ? ed.getText() : '', planHtml: ed ? ed.getHtml() : '', copy: cfg.copy ? f.copy.trim() : '',
-      items: items.map((x) => ({ kind: x.kind, size: (x.size || '').trim(), qty: Number(x.qty) || 1, note: (x.note || '').trim() })),
+      items: cfg.step3 ? items.map((x) => ({ kind: x.kind, size: (x.size || '').trim(), qty: Number(x.qty) || 1, note: (x.note || '').trim() })) : [],
       refImages: refImgs.filter((x) => x.id).map((x) => x.id),
       draft: f.draft, live: f.live, urgent: f.urgent.trim(), meet: f.meet, files: f.files.trim(), ref: f.ref.trim(),
     };
@@ -129,7 +129,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
       type: next.types.includes(cur.type) ? cur.type : '',
       channels: next.chips ? cur.channels.filter((x) => next.chips.options.includes(x)) : [],
     }));
-    const bad = items.filter((x) => x.kind && !next.kmap[x.kind]);
+    const bad = next.step3 ? items.filter((x) => x.kind && !next.kmap[x.kind]) : [];
     if (bad.length) {
       setItems((cur) => cur.map((x) => (x.kind && !next.kmap[x.kind] ? { ...x, kind: '' } : x)));
       toast(`팀마다 ${next.items.label} 종류가 달라요. 비워진 줄은 종류를 다시 골라 주세요.`);
@@ -210,7 +210,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
     if (cfg.place && !d.place) bad['f-place'] = `${josa(cfg.place.label, '을')} 적어 주세요.`;
     if (!d.goal) bad['f-goal'] = `${josa(cfg.goal.label, '을')} 적어 주세요.`;
     if (!d.plan) bad['f-plan'] = `${josa(cfg.plan.label, '을')} 적어 주세요.`;
-    if (!d.items.length) bad.items = `${josa(cfg.items.label, '을')} 하나 이상 추가해 주세요.`;
+    if (cfg.step3 && !d.items.length) bad.items = `${josa(cfg.items.label, '을')} 하나 이상 추가해 주세요.`;
     else if (d.items.some((x) => !x.kind)) bad.items = '종류를 고르지 않은 줄이 있어요.';
     if (d.channels.includes('기타') && !d.channelEtc) bad['f-channel-etc'] = `기타 ${cfg.chips?.label || ''} 이름을 적어 주세요.`;
     if (!d.channels.includes('기타')) d.channelEtc = '';
@@ -394,7 +394,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
           </div>
         </fieldset>
 
-        <fieldset>
+        {cfg.step3 && <fieldset>
           <legend><div className="sec-title"><span className="step">3</span>{cfg.step3.title}<small>{cfg.step3.sub}</small></div></legend>
           <div className="fields">
             <div className="f full"><span className="lbl">빠르게 추가</span>
@@ -436,10 +436,10 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
               {errs.items && <span className="err">{errs.items}</span>}
             </div>
           </div>
-        </fieldset>
+        </fieldset>}
 
         <fieldset>
-          <legend><div className="sec-title"><span className="step">4</span>일정<small>{cfg.step4.sub}</small></div></legend>
+          <legend><div className="sec-title"><span className="step">{cfg.step3 ? 4 : 3}</span>일정<small>{cfg.step4.sub}</small></div></legend>
           <div className="fields">
             {F({ id: 'f-draft', children: (<>
               <label htmlFor="f-draft">{cfg.draft.label}</label>
@@ -459,7 +459,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
         </fieldset>
 
         <fieldset>
-          <legend><div className="sec-title"><span className="step">5</span>자료<small>{cfg.step5.sub}</small></div></legend>
+          <legend><div className="sec-title"><span className="step">{cfg.step3 ? 5 : 4}</span>자료<small>{cfg.step5.sub}</small></div></legend>
           <div className="fields">
             <div className="f full"><label htmlFor="f-files">기획안 · 원본 자료 링크</label>
               <textarea id="f-files" style={{ minHeight: 64 }} placeholder={cfg.filesPh} value={f.files} onChange={(e) => set('files', e.target.value)} /></div>
