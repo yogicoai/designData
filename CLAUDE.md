@@ -47,6 +47,7 @@
 ## 저장소 (lib/server/storage)
 - 경로는 전부 '드롭박스 경로' 하나. 닿는 방법만 셋: API 키 → 드롭박스 API / `DROPBOX_LOCAL_DIR` → 이 PC 동기화 폴더 / 둘 다 없음 → `.data/dropbox`.
 - `DROPBOX_MODE` (11-18): `local` 이면 키가 있어도 2·3번, `api` 면 1번, 비우면 키 있으면 API. **이 PC `.env.local` = local** (API 시험은 11-18 통과 — 빠르고 이미 돌아가니 이 PC 는 local 유지, 바꾸려면 그 줄 지움). Vercel 에는 넣지 않음. `/api/state` 의 `me.storage` 로 지금 방식 확인.
+- **연결 상태 확인 `/api/health`(디자인팀 로그인 필요, 11-18)**: 저장 방식 · 드롭박스 환경변수 길이(정상 = APP_KEY 15 · APP_SECRET 15 · REFRESH_TOKEN 64 · ROOT 45자)와 `cleaned`(앞뒤 공백·따옴표가 붙어 있었으면 true) · 토큰 → 계정 → 요청 데스크 폴더 단계별 성공/드롭박스 오류. 환경변수는 `dropbox.envv()` 로 공백·따옴표 떼고 읽음. Vercel 환경변수는 바꾼 뒤 **Redeploy(또는 새 커밋)** 해야 적용.
 - **API 키 받음(11-18)**: 앱 `yogibo-design-desk`(Scoped · Full Dropbox · files.metadata/content read·write), 연결 계정 = 회사 공용 **'요기코퍼레이션_포워드'**(팀 Yogicorporation · 팀 스페이스 — 이 PC 드롭박스 맨 위의 `요기코퍼레이션_포워드/` 가 그 개인 폴더). 키·토큰은 `.env.local` 에만.
 - 다시 받을 때: `npm run dropbox:auth` = 7299 포트 도우미 → http://localhost:7299 → [허용]. 1단계(권한·계정·폴더·올리기) 통과하면 토큰 저장, 2단계(임시 업로드 주소·CORS·옮기기·받기·목록)는 결과만 알림. 시험 파일은 `_연결시험_…` 에 만들고 지움. Redirect URI `http://localhost:7299/callback`. `-- --check` = 지금 토큰으로 확인만.
 - 드롭박스 임시 업로드 주소(`content.dropboxapi.com/apitul/1/…`)는 CORS `*` 허용 → 브라우저 직접 올리기 가능(5.7MB 도 확인). Vercel 함수는 요청·응답 4.5MB 제한이라 직접 올리기가 필수. 일반 경로 + Path-Root 헤더 그대로 팀 폴더에 들어감.
