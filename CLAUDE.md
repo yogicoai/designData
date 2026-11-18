@@ -27,6 +27,7 @@
 - **디자인** = 원본 양식 그대로. **개발** = 11-18 사용자 확인 후 적용(유형 6 · 대상 시스템 · 요구사항 양식 · 작업 항목 · 중간 확인/오픈(배포) 희망일, 문구 칸 없음).
 - **VMD** = 사용자 11-18: "김성경 대리님께 따로 받아서 잡기" → 받기 전까지 디자인 양식 + 'VMD 담당' 문구만. 내가 만든 초안은 `VMD_DRAFT`(설치 매장 · 제작물 · 설치(입고) 희망일)로 남겨 둠 — 받은 항목으로 고친 뒤 `FORMS.VMD` 를 바꾸면 적용.
 - 개발 양식 다듬기: 사용자 11-18 "Flow 에서 개발자(이승환)에게 요청했던 글을 보고 양식을 잡아 달라" → Flow 커넥터가 로그인 만료라 못 읽음. 다시 연결되면 읽기만 해서 DEV 를 고쳐 제안.
+- 이미지 칸 이름은 양식의 `refs`({label, short, desc, note}) — 디자인 '레퍼런스 이미지', **개발 '수정할 화면 캡처' + 안내(고칠 부분·오류 화면을 캡처, 빨간 네모·화살표 표시)** (사용자 11-18 "개발쪽엔 수정 부분 캡처해서 올려달라는 것도"). 작성 화면·상세 제목·워드 섹션이 이걸 씀. 저장 파일 이름은 그대로 `레퍼런스_01…`.
 - 라벨 뒤 조사는 `josa()` (`lib/shared/josa.js`) 로 붙임 — 팀마다 라벨 받침이 달라서('업로드(라이브) 날짜를' / '오픈(배포) 희망일을').
 
 ## 다음 작업
@@ -36,7 +37,7 @@
 ## 데이터
 - `requests` (_id 'r…', by = 브라우저 익명 id, team, assignee, **folder = 드롭박스 전체 경로**, results = {round, count, at} 목록 표시용 요약)
 - `reviews` (_id = 요청 id; status review/progress/done/hold, designer(=담당자), start, draft, live, meeting 'YYYY-MM-DDTHH:MM', note)
-- `roster` (_id 'list', people[{name,title,team}]) · `files` (요청서 이미지, path = 드롭박스 전체 경로) · `login_fails` (PIN 틀린 기록, 1시간 뒤 자동 삭제)
+- `roster` (_id 'list', people[{name,title,team}]) — 명단은 DB 에만 있음(코드 기본값 없음). 바꿀 땐 화면 '요청자 명단' 또는 디자인팀 로그인 후 PUT /api/roster(전체 목록). 11-18 온라인고객지원팀에 이현주 대리 추가(김바르미 과장·최동욱 대리 다음, 전체 17명) · `files` (요청서 이미지, path = 드롭박스 전체 경로) · `login_fails` (PIN 틀린 기록, 1시간 뒤 자동 삭제)
 - 결과물(완성본)은 DB 에 안 넣음 — 드롭박스 `결과물/` 폴더를 그대로 읽음(디자이너가 직접 넣은 것도 보이게).
 - 화면은 `/api/state` 하나를 15초마다 폴링(rev 같으면 unchanged). 작성자 id·폴더 경로는 내려보내지 않음.
 - 날짜 문자열은 모두 KST `YYYY-MM-DD` (`kstToday()`).
@@ -75,4 +76,6 @@
 - JS 문자열 `.replace(a, b)` 의 b 안 `$$` 는 `$` 하나가 됨 → 코드 치환은 `split(a).join(b)`.
 - 서랍 머리말을 통째로 sticky 로 두면 scrollIntoView 된 버튼을 가림 → 고정은 얇은 줄(`.dh-bar`)만, `.drawer{scroll-padding-top}`.
 - **Vercel 첫 배포(11-18) `/api/state` 500**: requests.js 를 부르는 API 만 불러오는 순간 죽음(DB·첫 화면은 정상). 빌드 로그 경고 "Both `outputFileTracingRoot` and `turbopack.root` are set, but they must have the same value" — `fileURLToPath(new URL('.', …))` 는 끝에 '/' 가 붙어 달랐음. → `next.config.mjs` 에서 둘 다 `path.dirname(fileURLToPath(import.meta.url))` 로 같게, `sanitize-html` 은 `serverExternalPackages` 에서 빼서 번들(2.18 이 ESM 전용 htmlparser2 를 require), `package.json engines.node = 24.x`(이 PC 와 같게). 로컬 `next start` 는 node_modules 가 다 있어서 이런 추적 문제가 안 드러남 — 배포 문제는 빌드 로그 경고부터 볼 것.
+- `next.config.mjs` 의 루트 값을 바꾼 뒤 dev 서버가 `Cannot find module 'mongodb'` 로 죽음(11-18) — 옛 `.next/dev` 캐시 때문. dev 끄고 `rm -rf .next/dev` 뒤 다시 켜면 됨. 이때 Turbopack 이 한글 주석이 든 오류 코드 조각을 찍다 panic 해서 프로세스째 죽으니 로그 맨 위 오류부터 볼 것. `next build` 를 dev 와 같이 돌리다 dev 가 꺼진 적도 있음 → 빌드 시험 뒤 7200 이 살아 있는지 확인.
+- **Vercel 배포가 'Deployment Blocked'(11-18)**: 커밋 작성자 `sijoow` 가 Vercel 팀(yogico-s-projects, Hobby) 멤버가 아니라서 푸시 배포가 막힘(처음 가져오기 배포만 통과). 저장소는 GitHub `yogicoai/designData`(비공개). 해결 = 이 저장소만 `git config user.name/email` 을 yogicoai 계정으로 + 새 커밋 푸시(이메일은 사용자에게 받기), 또는 Pro 로 멤버 추가. 저장소 공개는 비추천(CLAUDE.md 에 PIN).
 - Vercel 로그를 `npx vercel logs` 로 보거나 `npx -p node@20` 같은 다른 Node 를 받아 시험하는 건 자동 권한 확인에서 막힘(11-18) → 사용자에게 Vercel 화면의 Logs/빌드 로그를 받아서 봄.

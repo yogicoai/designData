@@ -460,13 +460,15 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
           <div className="fields">
             <div className="f full"><label htmlFor="f-files">기획안 · 원본 자료 링크</label>
               <textarea id="f-files" style={{ minHeight: 64 }} placeholder={cfg.filesPh} value={f.files} onChange={(e) => set('files', e.target.value)} /></div>
-            <div className="f full"><span className="lbl">레퍼런스 이미지</span>
+            <div className="f full"><span className="lbl">{cfg.refs.label}</span>
+              {cfg.refs.note && <p className="refs-note" id="refs-note">{cfg.refs.note}</p>}
               <div
                 className={'drop' + (over ? ' over' : '')}
                 id="drop"
                 tabIndex={0}
                 role="button"
-                aria-label="레퍼런스 이미지 첨부"
+                aria-label={`${cfg.refs.label} 첨부`}
+                aria-describedby={cfg.refs.note ? 'refs-note' : undefined}
                 onClick={() => fileRef.current?.click()}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileRef.current?.click(); } }}
                 onDragOver={(e) => { e.preventDefault(); setOver(true); }}
@@ -484,7 +486,7 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
                   </div>
                 ))}
               </div></div>
-            <div className="f full"><label htmlFor="f-ref">레퍼런스 설명 · 링크</label>
+            <div className="f full"><label htmlFor="f-ref">{cfg.refs.desc}</label>
               <textarea id="f-ref" style={{ minHeight: 64 }} placeholder={cfg.refPh} value={f.ref} onChange={(e) => set('ref', e.target.value)} /></div>
           </div>
         </fieldset>

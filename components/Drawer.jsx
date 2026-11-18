@@ -212,7 +212,7 @@ export default function Drawer({ row, me, onClose, onEdit, onAlert, refresh, toa
 
       {(!!r.refImages?.length || r.ref) && (
         <div className="dsec">
-          <H4 ic="image">레퍼런스</H4>
+          <H4 ic="image">{cfg.refs.short}</H4>
           {!!r.refImages?.length && (
             <div className="thumbs" style={{ marginBottom: r.ref ? 12 : 0 }}>
               {r.refImages.map((id) => <div className="thumb" key={id}><RefImg src={'/api/files/' + id} onZoom={onZoom} /></div>)}
