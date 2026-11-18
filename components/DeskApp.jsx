@@ -29,6 +29,7 @@ export default function DeskApp() {
   const [pipeFilter, setPipeFilter] = useState('');
   const [alert, setAlert] = useState(null);
   const [zoom, setZoom] = useState(null);
+  const [home, setHome] = useState(0); // 로고 누를 때마다 +1 → 각 화면을 처음 상태로
   const rev = useRef('');
   const toastT = useRef(null);
 
@@ -68,6 +69,21 @@ export default function DeskApp() {
   }, []);
   const view = VIEWS.includes(hash) && (hash !== 'archive' || me.isAdmin) ? hash : me.isAdmin ? 'list' : 'new';
   const go = useCallback((v) => { location.hash = v; }, []);
+
+  /* 로고 → 첫 화면 (요청자 = 요청서 작성, 디자인팀 = 요청 현황). 열린 창·필터는 닫고 처음 상태로 */
+  const goHome = (e) => {
+    e.preventDefault();
+    if (editing && !window.confirm('수정 중인 내용은 저장되지 않아요. 첫 화면으로 갈까요?')) return;
+    setEditing(null);
+    setOpenId(null);
+    setPanel(null);
+    setZoom(null);
+    setPipeFilter('');
+    setHome((n) => n + 1);
+    if (location.hash) history.pushState(null, '', location.pathname + location.search);
+    setHash('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const rows = useMemo(() => data.requests.map((r) => {
     const rv = data.reviews[r.id] || {};
@@ -152,12 +168,12 @@ export default function DeskApp() {
     <>
       <header className="top">
         <div className="wrap">
-          <div className="brand">
+          <a className="brand" href="/" onClick={goHome} title="첫 화면으로">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="logo" src="/yogibo-logo.png" alt="Yogibo" width={361} height={144} />
             <span className="brand-div" aria-hidden="true" />
             <h1>디자인 요청 데스크</h1>
-          </div>
+          </a>
           <div className="role">
             <span>접속 권한</span>
             <b>{me.isAdmin ? '디자인팀 (편집자)' : '요청자'}</b>
@@ -193,10 +209,11 @@ export default function DeskApp() {
             setBanner={setBanner}
             onZoom={setZoom}
             go={go}
+            home={home}
           />
-          {view === 'list' && <ListView rows={rows} loaded={data.loaded} pipeFilter={pipeFilter} setPipeFilter={setPipeFilter} onOpen={openDrawer} go={go} />}
-          {view === 'schedule' && <ScheduleView rows={rows} onOpen={openDrawer} />}
-          {view === 'archive' && me.isAdmin && <ArchiveView rows={rows} onOpen={openDrawer} onExport={onExport} />}
+          {view === 'list' && <ListView key={'l' + home} rows={rows} loaded={data.loaded} pipeFilter={pipeFilter} setPipeFilter={setPipeFilter} onOpen={openDrawer} go={go} />}
+          {view === 'schedule' && <ScheduleView key={'s' + home} rows={rows} onOpen={openDrawer} />}
+          {view === 'archive' && me.isAdmin && <ArchiveView key={'a' + home} rows={rows} onOpen={openDrawer} onExport={onExport} />}
         </main>
       </div>
 

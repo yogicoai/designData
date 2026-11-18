@@ -69,7 +69,8 @@ a { color: var(--brand-ink); }
 /* ── 헤더 · 탭 ── */
 header.top { position: sticky; top: 0; z-index: 5; background: rgba(255, 255, 255, 0.94); -webkit-backdrop-filter: saturate(1.4) blur(10px); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line-2); }
 .top .wrap { display: flex; align-items: center; gap: 10px 20px; flex-wrap: wrap; padding-top: 14px; }
-.brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+.brand { display: flex; align-items: center; gap: 12px; margin-right: auto; color: inherit; text-decoration: none; border-radius: var(--r-s); }
+.brand:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; }
 .brand .logo { height: 26px; width: auto; display: block; }
 .brand-div { width: 1px; height: 18px; background: var(--line); }
 .brand h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }

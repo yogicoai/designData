@@ -40,7 +40,7 @@ function fromData(d) {
   return f;
 }
 
-export default function RequestForm({ active, roster, editing, onCancelEdit, onEditSaved, onSubmitted, toast, setBanner, onZoom, go }) {
+export default function RequestForm({ active, roster, editing, onCancelEdit, onEditSaved, onSubmitted, toast, setBanner, onZoom, go, home }) {
   const [f, setF] = useState(EMPTY);
   const [items, setItems] = useState([]);
   const [refImgs, setRefImgs] = useState([]);
@@ -115,6 +115,9 @@ export default function RequestForm({ active, roster, editing, onCancelEdit, onE
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editing?.id]);
+
+  /* 로고(첫 화면) — 접수 완료 화면에 있었으면 빈 작성 화면으로 (쓰던 임시저장은 그대로) */
+  useEffect(() => { if (home) setDone(null); }, [home]);
 
   const set = (k, v) => { setF((cur) => ({ ...cur, [k]: v })); if (Object.keys(errs).length) setErrs({}); };
 

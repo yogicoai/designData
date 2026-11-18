@@ -16,10 +16,12 @@
 ## 요청서 흐름 (11-17 추가분)
 - **STEP 0 요청할 팀** (드롭다운, 필수): 디자인 → 박민정 · VMD → 김성경 · 개발 → 이승환 (`TEAMS` in constants). 서버가 팀에 맞춰 `assignee` 를 정함.
 - 담당자 표시 = `assigneeOf(r, rv)` = 디자인팀이 처리에서 고른 사람(`rv.designer`) > 요청 때 고른 팀의 담당자(`r.assignee`). 처리 화면 담당자 목록 = `ASSIGNEES` (박민정·김성경·이승환·박선화).
-- 요청 부서 'MD·상품기획' → **'온라인고객지원팀'** (명단 김바르미·최동욱도 옮김).
+- 요청 부서 'MD·상품기획' → **'온라인고객지원팀'** (명단 김바르미·최동욱도 옮김). 11-18 **'CS' 부서 없앰**(사용자: "온라인고객지원팀이랑 붙어서 가면 돼서") — CS 에 있던 이현주 대리는 온라인고객지원팀으로(중복 줄 뺌). 부서 = 마케팅디자인 · 온라인고객지원팀 · 영업 · 경영지원 · 임원.
+- 요청 삭제는 **디자인팀만**(상세 맨 아래 '요청 삭제', 두 번 눌러 확정) — 사용자 11-18 "지금 이 상태가 맞아". 요청자는 검토중·보류일 때 '철회'만.
 - 레퍼런스 이미지 **최대 20장** (장당 20MB).
 - 상태(11-18): 담당 팀이 고르는 `STATUS` = 검토중 · 진행중 · 완료 · 보류 · **취소**(새로 넣음, 진행 중에라도 접은 요청 — **사유 메모 필수**, 요청자 수정·철회 막힘, 처리 화면은 남아 되돌릴 수 있음). 요청자가 검토중·보류일 때 직접 거둔 건 따로 '철회'(withdrawn). 취소·철회 = `isDropped()` → 목록 기본 보기·일정표에서 빠짐.
 - 요청 현황 목록: 상태 버튼 줄(.pipe, 건수 0이면 숨김)을 없애고 **'상태' select**(`#l-status`, 7개 늘 보임 + 건수)로 바꿈 — 사용자 11-18 "진행중·취소·요청 같은 것도 select 로".
+- 로고(`a.brand`, 11-18 사용자 요청) = 첫 화면: 주소의 #을 지우고 역할별 기본 화면(요청자 = 요청서 작성, 디자인팀 = 요청 현황). 서랍·창·상태 필터를 닫고, 목록·일정표·보관 화면은 `key` 를 바꿔 처음 상태로, 접수 완료 화면이면 빈 작성 화면으로(임시저장은 유지). 수정 중이면 한 번 물어봄. 뒤로 가기로 이전 화면 복귀.
 - 일정표: **항상 달력부터** 열림(보기 기억 안 함). 막대 색 = **팀 색**(디자인 #3FA6D3 · VMD #F29B38 · 개발 #20B08A), 검토중 = 옅은 점선, 보류 = 흐리게, 완료 = 회색 ✓. 팀이 없는 예전 요청은 담당자의 팀 색.
 
 ## 팀별 요청서 양식 (11-18)
@@ -32,12 +34,12 @@
 
 ## 다음 작업
 - VMD 양식(김성경 대리님 항목) · 개발 양식 Flow 대조(위).
-- Vercel 배포: 드롭박스 API 키는 받음(11-18, 아래 저장소). 남은 것 — 환경변수(`MONGODB_URI`·`MONGODB_DB`·`ADMIN_PASSWORD`·`SESSION_SECRET`·`DROPBOX_APP_KEY`·`DROPBOX_APP_SECRET`·`DROPBOX_REFRESH_TOKEN`·`DROPBOX_ROOT`; **`DROPBOX_MODE`·`DROPBOX_LOCAL_DIR` 은 넣지 않음**) · 워드 내보내기 4.5MB 초과 처리 · 접속 제한 방식(사이트 비밀번호 / 회사 로그인) 사용자 결정. 사용자가 11-18 "vercel 에 올린 것"이라고 함 — 이미 프로젝트가 있을 수 있으니 확인.
+- Vercel 배포: 드롭박스 API 키는 받음(11-18, 아래 저장소). 남은 것 — 환경변수(`MONGODB_URI`·`MONGODB_DB`·`ADMIN_PASSWORD`·`SESSION_SECRET`·`DROPBOX_APP_KEY`·`DROPBOX_APP_SECRET`·`DROPBOX_REFRESH_TOKEN`·`DROPBOX_ROOT`; **`DROPBOX_MODE`·`DROPBOX_LOCAL_DIR` 은 넣지 않음**) · 워드 내보내기 4.5MB 초과 처리 · 접속 제한 방식(사이트 비밀번호 / 회사 로그인) 사용자 결정. 사이트 = https://design-data-gamma.vercel.app (11-18 12시대에 /api/state 200 으로 살아남). 단 그때 `me.storage` = local → **Vercel 에 드롭박스 키 4개가 없거나 `DROPBOX_MODE=local` 이 들어가 있음** → 이미지 /api/files 500. 키 넣고 Redeploy 뒤 `me.storage` = dropbox 인지 확인.
 
 ## 데이터
 - `requests` (_id 'r…', by = 브라우저 익명 id, team, assignee, **folder = 드롭박스 전체 경로**, results = {round, count, at} 목록 표시용 요약)
 - `reviews` (_id = 요청 id; status review/progress/done/hold, designer(=담당자), start, draft, live, meeting 'YYYY-MM-DDTHH:MM', note)
-- `roster` (_id 'list', people[{name,title,team}]) — 명단은 DB 에만 있음(코드 기본값 없음). 바꿀 땐 화면 '요청자 명단' 또는 디자인팀 로그인 후 PUT /api/roster(전체 목록). 11-18 온라인고객지원팀에 이현주 대리 추가(김바르미 과장·최동욱 대리 다음, 전체 17명) · `files` (요청서 이미지, path = 드롭박스 전체 경로) · `login_fails` (PIN 틀린 기록, 1시간 뒤 자동 삭제)
+- `roster` (_id 'list', people[{name,title,team}]) — 명단은 DB 에만 있음(코드 기본값 없음). 바꿀 땐 화면 '요청자 명단' 또는 디자인팀 로그인 후 PUT /api/roster(전체 목록). 11-18 온라인고객지원팀에 이현주 대리 추가(김바르미 과장·최동욱 대리 다음) 뒤 CS 줄 정리 → 전체 16명 · `files` (요청서 이미지, path = 드롭박스 전체 경로) · `login_fails` (PIN 틀린 기록, 1시간 뒤 자동 삭제)
 - 결과물(완성본)은 DB 에 안 넣음 — 드롭박스 `결과물/` 폴더를 그대로 읽음(디자이너가 직접 넣은 것도 보이게).
 - 화면은 `/api/state` 하나를 15초마다 폴링(rev 같으면 unchanged). 작성자 id·폴더 경로는 내려보내지 않음.
 - 날짜 문자열은 모두 KST `YYYY-MM-DD` (`kstToday()`).
